@@ -1,66 +1,82 @@
-﻿<pu:WindowX x:Class="忘却的旋律_EP.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:pu="clr-namespace:Panuon.UI.Silver;assembly=Panuon.UI.Silver"
-        mc:Ignorable="d"
-        pu:WindowXCaption.Height="25"
-        pu:WindowXCaption.Padding="0,0,0,0"
-        pu:WindowXCaption.Header="  忘却的旋律:Extreme"
-        Height="460" Width="800" ResizeMode="NoResize" WindowStyle="SingleBorderWindow">
+<ui:WindowX x:Class="忘却的旋律_EP.MainWindow"
+                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                xmlns:ui="https://opensource.panuon.com/wpf-ui"
+                DisableDragMove="False"
+             
+                mc:Ignorable="d"
+                Title=" 难忘的旋律Extreme "
+                Icon="Source/favicon.ico"
+        
+                ui:WindowXCaption.Height="25"
+                ui:WindowXCaption.Padding="0,0,0,0"
+                ui:WindowXCaption.Background="#77787b"
+                ui:WindowXCaption.Foreground="Black"
+                ui:WindowXCaption.BorderBrush="#a1a3a6"
+                ui:WindowXCaption.BorderThickness="1"
+               
+                ui:WindowXCaption.ShadowColor="#999d9c"
+                Height="460" Width="800" ResizeMode="NoResize" WindowStyle="SingleBorderWindow">
+    
+    <ui:WindowX.Effect>
+        <ui:AeroWindowXEffect Background="#66FFFFFF"/>
+    </ui:WindowX.Effect>
+   
         
     <Grid>
-        <Grid.Background>
-            <ImageBrush ImageSource="Source/bq.jpg" Stretch="Fill"></ImageBrush>
-        </Grid.Background>
         
-        <StackPanel Height="100" Width="350" Margin="-420,-330,0,0">
-            
+        <StackPanel Height="200" Width="350" Margin="-430,-200,0,0">
+            <TextBlock>游戏版本 </TextBlock>
             <ComboBox x:Name="GameVersion" DisplayMemberPath="Id" Width="200" Margin="-150,10,0,0"
-                      pu:ComboBoxHelper.Header="游戏版本 "
-                      pu:ComboBoxHelper.ItemHeight="NaN"
-                      pu:ComboBoxHelper.Watermark="待设置"
-                      pu:ComboBoxHelper.HoverForeground="Black"
-                      pu:ComboBoxHelper.HoverBackground="Azure"
-                      />
-            
+                      Height="25"
+                      ui:ComboBoxHelper.Watermark="待设置"
+                      ui:ComboBoxHelper.HoverForeground="Black"
+                      ui:ComboBoxHelper.HoverBackground="#66FFFFFF"
+                      ui:ComboBoxHelper.CornerRadius="5,5,5,5"
+            />
+            <TextBlock>Java路径 </TextBlock>
             <ComboBox x:Name="JavaPath" Width="200" Margin="-150,10,0,0"
-                      pu:ComboBoxHelper.Header="Java版本 "
-                      pu:ComboBoxHelper.ItemHeight="NaN"
-                      pu:ComboBoxHelper.Watermark="待设置"
-                      pu:ComboBoxHelper.HoverForeground="Black"
-                      pu:ComboBoxHelper.HoverBackground="Azure"
-                      />
+                     Height="25"
+                      ui:ComboBoxHelper.Watermark="待设置"
+                      ui:ComboBoxHelper.HoverForeground="Black"
+                      ui:ComboBoxHelper.HoverBackground="#66FFFFFF"
+                      ui:ComboBoxHelper.CornerRadius="5,5,5,5"
+            />
+            <TextBlock>用户名</TextBlock>
+            <TextBox x:Name="PlayerName"
+                    
+                     Height="25"
+                     Width="200" 
+                     Margin="-150,10,0,0"
+                     ui:TextBoxHelper.CornerRadius="5,5,5,5"
+                     ui:TextBoxHelper.HoverBackground="#66FFFFFF"
+                     ui:TextBoxHelper.FocusedBorderBrush="#77787b"
+                     ui:TextBoxHelper.FocusedShadowColor="#a1a3a6"/>
             
             
         </StackPanel>
-            
-        <TextBox x:Name="PlayerName"
-                             Height="30"
-                             Width="190" 
-                             Margin="550,150,0,0" 
-                             pu:TextBoxHelper.Header="玩家名称 "
-                             pu:TextBoxHelper.Watermark="待输入"
-                             pu:TextBoxHelper.CornerRadius="15"
-                             pu:TextBoxHelper.FocusedBorderBrush="Aquamarine"
-                             pu:TextBoxHelper.FocusedShadowColor="Aqua"/>
+        
+        
+        
         
         <Button Height="60"
                 Width="190"
-                x:Name="StartGame"
                 Click="Button_Click"
                 Content=" 启 动 游 戏 "
-                Background="Azure"
-                pu:ButtonHelper.ButtonStyle="Outline"
-                pu:ButtonHelper.CornerRadius="15"
-                pu:ButtonHelper.ClickStyle="Sink"
-                pu:ButtonHelper.HoverBrush="LightBlue"
-                pu:ButtonHelper.IsWaiting="False"
-                pu:ButtonHelper.WaitingContent="等待游戏启动"
-                pu:ButtonHelper.ClickCoverOpacity="0.2"
+                ui:ButtonHelper.CornerRadius="15,15,15,15"
+                ui:ButtonHelper.HoverCornerRadius="15,15,15,15"
+                ui:ButtonHelper.ClickEffect="Shake"
+                ui:ButtonHelper.ClickBorderBrush="#a1a3a6"
+                ui:ButtonHelper.ClickBackground="#66FFFFFF"
+                ui:ButtonHelper.HoverBackground="#66FFFFFF"
+                ui:ButtonHelper.HoverForeground="#66FFFFFF"
+                ui:ButtonHelper.HoverBorderBrush="#a1a3a6"
+                ui:ButtonHelper.ShadowColor="Black"
                 Margin="550,250,0,0"/>
-        <TextBlock x:Name="Progress" VerticalAlignment="Bottom" ></TextBlock>
+        
     </Grid>
-</pu:WindowX>
+</ui:WindowX>
+
 

@@ -1,21 +1,8 @@
-using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using Panuon.UI;
-using System.Net;
-using System.Windows.Threading;
-using Panuon.UI.Silver;
+using Panuon.WPF.UI;
 using StarLight_Core.Authentication;
 using StarLight_Core.Enum;
 using StarLight_Core.Launch;
-using StarLight_Core.Models.Authentication;
 using StarLight_Core.Models.Launch;
 using StarLight_Core.Utilities;
 
@@ -40,20 +27,23 @@ public partial class MainWindow : WindowX
         GameVersion.DisplayMemberPath = "Id";
         GameVersion.SelectedValuePath = "Id";
         GameVersion.ItemsSource = GameCoreUtil.GetGameCores();
-       
+        
     }
 
+    
     void GetJava()
     {
         JavaPath.DisplayMemberPath = "JavaPath";
         JavaPath.SelectedValuePath = "JavaPath";
         JavaPath.ItemsSource = JavaUtil.GetJavas();
-       
+        
     }
     private async void Button_Click(object sender, RoutedEventArgs e)
     {
+       
         var account = new OfflineAuthentication(PlayerName.Text).OfflineAuth();
         LaunchConfig args = new() // 配置启动参数
+
         {
             Account = new()
             {
@@ -62,10 +52,9 @@ public partial class MainWindow : WindowX
             GameCoreConfig = new()
             {
                 Root = ".minecraft", // 游戏根目录(可以是绝对的也可以是相对的,自动判断)
-                Version = GameVersion.Text, // 启动的版本
+                Version =GameVersion.Text, // 启动的版本
                 IsVersionIsolation = true, //版本隔离
-                // Nide8authPath = ".minecraft\\nide8auth.jar", // 只有统一通行证需要
-                // UnifiedPassServerId = "xxxxxxxxxxxxxxxxxx" // 同上
+            
             },
             JavaConfig = new()
             {
@@ -76,35 +65,26 @@ public partial class MainWindow : WindowX
         };
         var launch = new MinecraftLauncher(args); // 实例化启动器
         var la = await launch.LaunchAsync(ReportProgress); // 启动
-                
+
 // 日志输出
         la.ErrorReceived += (output) => Console.WriteLine($"{output}");
         la.OutputReceived += (output) => Console.WriteLine($"{output}");
-                
+
         if (la.Status == Status.Succeeded)
         {
-            MessageBox.Show("启动成功");
+            NoticeBox.Show("启动成功", "忘却的旋律Extreme", MessageBoxIcon.Info);
             // 启动成功执行操作
         }
         else
         {
-            MessageBox.Show("启动失败"+la.Exception);
+            MessageBoxX.Show("启动失败"+la.Exception);
         }
+    
     }
     private void ReportProgress(ProgressReport progress)
     {
-        Dispatcher.Invoke(() =>
-        {
-            Progress.Text = progress.Description + " " + progress.Percentage + "%";
-        
-    
-            if (progress.Percentage >= 90)
-            {
-                Progress.Visibility= Visibility.Collapsed;
-            }
-        });
+
     }
-    
     
 
 

@@ -1,10 +1,12 @@
+
+<p align="center">
 ![Static Badge](https://img.shields.io/badge/.NET-8.0-blue)
 ![Static Badge](https://img.shields.io/badge/协议-MIT-orange)
 ![Static Badge](https://img.shields.io/badge/语言-C#-red)
 ![Static Badge](https://img.shields.io/badge/版本-1.5-green)
 ![Static Badge](https://img.shields.io/badge/状态-开发中-yellow)
 [![github](https://img.shields.io/badge/BILI-我的B站主页-darkturquoise.svg)](https://space.bilibili.com/38782485?spm_id_from=333.1007.0.0)
-
+</p>
 
 ---
 

@@ -3,14 +3,14 @@
 
 ---
 
-<div align="center">
+
 ![frame](https://img.shields.io/badge/.NET-8.0-blue)
 ![license](https://img.shields.io/badge/协议-MIT-orange)
 ![language](https://img.shields.io/badge/语言-C#-red)
 ![version](https://img.shields.io/badge/版本-1.5-green)
 ![status](https://img.shields.io/badge/状态-开发中-yellow)
 [![bili](https://img.shields.io/badge/BILI-我的B站主页-darkturquoise.svg)](https://space.bilibili.com/38782485?spm_id_from=333.1007.0.0)
-</div>
+
 
 ---
 

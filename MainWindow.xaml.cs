@@ -1,3 +1,4 @@
+using System.IO;
 using System.Windows;
 using Panuon.WPF.UI;
 using StarLight_Core.Authentication;
@@ -5,6 +6,7 @@ using StarLight_Core.Enum;
 using StarLight_Core.Launch;
 using StarLight_Core.Models.Launch;
 using StarLight_Core.Utilities;
+using System.Management;
 
 
 namespace 忘却的旋律_EP;
@@ -18,8 +20,13 @@ public partial class MainWindow : WindowX
     public MainWindow()
     {
       InitializeComponent();
+      
       GetGameVer();
       GetJava();
+      
+      
+
+
     }
 
     void GetGameVer()
@@ -29,7 +36,7 @@ public partial class MainWindow : WindowX
         GameVersion.ItemsSource = GameCoreUtil.GetGameCores();
         
     }
-
+    
     
     void GetJava()
     {
@@ -38,6 +45,28 @@ public partial class MainWindow : WindowX
         JavaPath.ItemsSource = JavaUtil.GetJavas();
         
     }
+
+
+    public static ulong GetTotalMemory()
+    {
+        try
+        {
+            var searcher = new ManagementObjectSearcher("SELECT TotalPhysicalMemory FROM Win32_ComputerSystem");
+            foreach (ManagementObject obj in searcher.Get())
+            {
+                return Convert.ToUInt64(obj["TotalPhysicalMemory"]);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"获取内存失败: {ex.Message}");
+        }
+        return 0;
+    }
+    
+
+    
+    
     private async void Button_Click(object sender, RoutedEventArgs e)
     {
        
@@ -59,8 +88,8 @@ public partial class MainWindow : WindowX
             JavaConfig = new()
             {
                 JavaPath = JavaPath.Text, // Java 路径(绝对路径)
-                MaxMemory = 4096,
-                MinMemory = 1000
+                MaxMemory = (int)MemorySlider.Value,
+                MinMemory = (int)MemorySlider.Minimum
             }
         };
         var launch = new MinecraftLauncher(args); // 实例化启动器
@@ -85,8 +114,13 @@ public partial class MainWindow : WindowX
     {
 
     }
-    
 
 
-    
+    private void MemorySlider_OnValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        ulong totalMemoryBytes = GetTotalMemory();
+        double totalMemoryMb = totalMemoryBytes / (1024.0 * 1024.0);
+        int totalMemoryMbInt = (int)Math.Round(totalMemoryMb); // 将结果四舍五入为整数
+        MemorySlider.Maximum = totalMemoryMbInt;
+    }
 }

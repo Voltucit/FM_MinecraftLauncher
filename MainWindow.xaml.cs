@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using Panuon.WPF.UI;
@@ -7,6 +8,9 @@ using StarLight_Core.Launch;
 using StarLight_Core.Models.Launch;
 using StarLight_Core.Utilities;
 using System.Management;
+using System.Windows.Controls;
+using Panuon.WPF.UI.Configurations;
+using StarLight_Core.Models.Authentication;
 
 
 namespace 忘却的旋律_EP;
@@ -23,8 +27,9 @@ public partial class MainWindow : WindowX
       
       GetGameVer();
       GetJava();
-      
-      
+      var setting = Application.Current.FindResource("toastSetting") as ToastSetting;
+
+      LoginMod.SelectedIndex = 0;
 
 
     }
@@ -44,10 +49,11 @@ public partial class MainWindow : WindowX
         JavaPath.SelectedValuePath = "JavaPath";
         JavaPath.ItemsSource = JavaUtil.GetJavas();
         
+        
     }
 
 
-    public static ulong GetTotalMemory()
+    private static ulong GetTotalMemory()
     {
         try
         {
@@ -69,10 +75,38 @@ public partial class MainWindow : WindowX
     
     private async void Button_Click(object sender, RoutedEventArgs e)
     {
-       
-        var account = new OfflineAuthentication(PlayerName.Text).OfflineAuth();
+        BaseAccount account;
+        
+        if (LoginMod.SelectedIndex==0)
+        {
+            var auth=new MicrosoftAuthentication("a9088867-a8c4-4d8d-a4a1-48a4eacb137b");
+            var code =await  auth.RetrieveDeviceCodeInfo();
+            Clipboard.Clear();
+            Clipboard.SetText(code.UserCode);
+            MessageBoxX.Show("登录代码:" + code.UserCode + "  已复制到剪切栏");
+            try
+            {
+                Process.Start(new ProcessStartInfo(code.VerificationUri)
+                {
+                    UseShellExecute = true,
+                    Verb = "open"
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"无法打开浏览器: {ex.Message}");
+            }
+            var token = await auth.GetTokenResponse(code);
+            account = await auth.MicrosoftAuthAsync(token, x =>
+            {
+                UserToken.Text = x;
+            });
+        }
+        else
+        {
+              account = new OfflineAuthentication(PlayerName.Text).OfflineAuth();
+        }
         LaunchConfig args = new() // 配置启动参数
-
         {
             Account = new()
             {
@@ -101,7 +135,7 @@ public partial class MainWindow : WindowX
 
         if (la.Status == Status.Succeeded)
         {
-            NoticeBox.Show("启动成功", "忘却的旋律Extreme", MessageBoxIcon.Info);
+            Panuon.WPF.UI.Toast.Show("启动成功");
             // 启动成功执行操作
         }
         else
@@ -122,5 +156,19 @@ public partial class MainWindow : WindowX
         double totalMemoryMb = totalMemoryBytes / (1024.0 * 1024.0);
         int totalMemoryMbInt = (int)Math.Round(totalMemoryMb); // 将结果四舍五入为整数
         MemorySlider.Maximum = totalMemoryMbInt;
+    }
+
+    private void LoginMod_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (LoginMod.SelectedIndex==0)
+        {
+            PlayerName.Visibility = Visibility.Collapsed;
+            PlayerNames.Visibility = Visibility.Collapsed;
+        }
+        else
+        {
+            PlayerName.Visibility = Visibility.Visible;
+            PlayerNames.Visibility = Visibility.Visible;
+        }
     }
 }

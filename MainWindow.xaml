@@ -19,15 +19,16 @@
                
                 ui:WindowXCaption.ShadowColor="#999d9c"
                 Height="460" Width="800" ResizeMode="NoResize" WindowStyle="SingleBorderWindow">
-    
+            
     <ui:WindowX.Effect>
         <ui:AeroWindowXEffect Background="#66FFFFFF"/>
     </ui:WindowX.Effect>
+
    
         
     <Grid>
         
-        <StackPanel Height="200" Width="350" Margin="-430,-200,0,0">
+        <StackPanel Height="220" Width="350" Margin="-430,-200,0,0">
             <TextBlock>游戏版本 </TextBlock>
             <ComboBox x:Name="GameVersion" DisplayMemberPath="Id" Width="200" Margin="-150,10,0,0"
                       Height="25"
@@ -44,7 +45,24 @@
                       ui:ComboBoxHelper.HoverBackground="#66FFFFFF"
                       ui:ComboBoxHelper.CornerRadius="5,5,5,5"
             />
-            <TextBlock>用户名</TextBlock>
+            
+            <TextBlock>登录模式</TextBlock>
+            <ComboBox 
+                x:Name="LoginMod"
+                Height="25"
+                Width="200" 
+                Margin="-150,10,0,0"
+                ui:ComboBoxHelper.CornerRadius="5,5,5,5"
+                ui:ComboBoxHelper.HoverBackground="#66FFFFFF"
+                ui:ComboBoxHelper.FocusedBorderBrush="#77787b"
+                ui:ComboBoxHelper.FocusedShadowColor="#a1a3a6"
+                SelectionChanged="LoginMod_OnSelectionChanged"
+            >
+                <ComboBoxItem Content="正版登录"></ComboBoxItem>
+                <ComboBoxItem Content="离线登录"></ComboBoxItem>
+            </ComboBox>
+            
+            <TextBlock x:Name="PlayerNames">用户名</TextBlock>
             <TextBox x:Name="PlayerName"
                     
                      Height="25"
@@ -54,7 +72,11 @@
                      ui:TextBoxHelper.HoverBackground="#66FFFFFF"
                      ui:TextBoxHelper.FocusedBorderBrush="#77787b"
                      ui:TextBoxHelper.FocusedShadowColor="#a1a3a6"/>
-            
+            <TextBlock x:Name="UserToken"
+                       Height="25"
+                       Width="200"
+                       Margin="-150,10,0,0"
+                       />
             
         </StackPanel>
         

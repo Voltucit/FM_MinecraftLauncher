@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
@@ -11,7 +12,7 @@ using System.Management;
 using System.Windows.Controls;
 using Panuon.WPF.UI.Configurations;
 using StarLight_Core.Models.Authentication;
-
+using Newtonsoft.Json;
 
 namespace 忘却的旋律_EP;
 using System.Net;
@@ -28,10 +29,8 @@ public partial class MainWindow : WindowX
       
       GetGameVer();
       GetJava();
+      ConfigSet();
       var setting = Application.Current.FindResource("toastSetting") as ToastSetting;
-
-      LoginMod.SelectedIndex = 0;
-
 
     }
 
@@ -53,6 +52,27 @@ public partial class MainWindow : WindowX
         
     }
 
+
+    void ConfigSet()
+    {
+        var config = JsonUtil.Load();
+        LoginMod.SelectedIndex = config.LoginMode;
+        PlayerName.Text  = config.Playername;
+        if (!string.IsNullOrEmpty(config.GameVersion))
+        {
+            GameVersion.SelectedItem = GameVersion.Items
+                .Cast<dynamic>()
+                .FirstOrDefault(i => i.Id == config.GameVersion);
+        }
+
+        // 设置 Java 路径
+        if (!string.IsNullOrEmpty(config.JavaPath))
+        {
+            JavaPath.SelectedItem = JavaPath.Items
+                .Cast<dynamic>()
+                .FirstOrDefault(j => j.JavaPath == config.JavaPath);
+        }
+    }
 
     private static ulong GetTotalMemory()
     {
@@ -123,8 +143,8 @@ public partial class MainWindow : WindowX
             JavaConfig = new()
             {
                 JavaPath = JavaPath.Text, // Java 路径(绝对路径)
-                MaxMemory = (int)MemorySlider.Value,
-                MinMemory = (int)MemorySlider.Minimum
+                MaxMemory = (int)(MemorySlider.Value*1024),
+                MinMemory = (int)(MemorySlider.Minimum*1024)
             }
         };
         var launch = new MinecraftLauncher(args); // 实例化启动器
@@ -137,6 +157,7 @@ public partial class MainWindow : WindowX
         if (la.Status == Status.Succeeded)
         {
             Panuon.WPF.UI.Toast.Show("启动成功");
+
             // 启动成功执行操作
         }
         else
@@ -154,7 +175,7 @@ public partial class MainWindow : WindowX
     private void MemorySlider_OnValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
         ulong totalMemoryBytes = GetTotalMemory();
-        double totalMemoryMb = totalMemoryBytes / (1024.0 * 1024.0*1024.0);
+        double totalMemoryMb = totalMemoryBytes / (1024.0 * 1024.0*1024);
         int totalMemoryMbInt = (int)Math.Round(totalMemoryMb); // 将结果四舍五入为整数
         MemorySlider.Maximum = totalMemoryMbInt;
     }
@@ -171,5 +192,17 @@ public partial class MainWindow : WindowX
             PlayerName.Visibility = Visibility.Visible;
             PlayerNames.Visibility = Visibility.Visible;
         }
+    }
+
+    private void MainWindow_OnClosing(object? sender, CancelEventArgs e)
+    {
+        var config = new LauncherSettings()
+        {
+            LoginMode = LoginMod.SelectedIndex,
+            Playername = PlayerName.Text,
+            GameVersion = (GameVersion.SelectedItem as dynamic)?.Id ?? "",
+            JavaPath = (JavaPath.SelectedItem as dynamic)?.JavaPath ?? "",
+        };
+        JsonUtil.Save(config);
     }
 }

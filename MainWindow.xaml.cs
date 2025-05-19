@@ -25,6 +25,7 @@ public partial class MainWindow : WindowX
     {
       InitializeComponent();
       
+      
       GetGameVer();
       GetJava();
       var setting = Application.Current.FindResource("toastSetting") as ToastSetting;
@@ -153,7 +154,7 @@ public partial class MainWindow : WindowX
     private void MemorySlider_OnValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
         ulong totalMemoryBytes = GetTotalMemory();
-        double totalMemoryMb = totalMemoryBytes / (1024.0 * 1024.0);
+        double totalMemoryMb = totalMemoryBytes / (1024.0 * 1024.0*1024.0);
         int totalMemoryMbInt = (int)Math.Round(totalMemoryMb); // 将结果四舍五入为整数
         MemorySlider.Maximum = totalMemoryMbInt;
     }

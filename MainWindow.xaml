@@ -86,7 +86,6 @@
             <Slider x:Name="MemorySlider" 
                     ValueChanged="MemorySlider_OnValueChanged"
                     Minimum="1"
-                    Value='4'
                     TickFrequency="1"
                     IsSnapToTickEnabled="True"
                     Width="400"

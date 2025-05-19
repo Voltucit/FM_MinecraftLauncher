@@ -58,6 +58,7 @@ public partial class MainWindow : WindowX
         var config = JsonUtil.Load();
         LoginMod.SelectedIndex = config.LoginMode;
         PlayerName.Text  = config.Playername;
+        MemorySlider.Value = config.Memory;
         if (!string.IsNullOrEmpty(config.GameVersion))
         {
             GameVersion.SelectedItem = GameVersion.Items
@@ -202,6 +203,7 @@ public partial class MainWindow : WindowX
             Playername = PlayerName.Text,
             GameVersion = (GameVersion.SelectedItem as dynamic)?.Id ?? "",
             JavaPath = (JavaPath.SelectedItem as dynamic)?.JavaPath ?? "",
+            Memory =  MemorySlider.Value
         };
         JsonUtil.Save(config);
     }

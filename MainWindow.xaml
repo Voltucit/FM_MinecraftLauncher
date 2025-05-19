@@ -9,6 +9,7 @@
                 mc:Ignorable="d"
                 Title=" 难忘的旋律Extreme "
                 Icon="Source/favicon.ico"
+                Closing="MainWindow_OnClosing"
         
                 ui:WindowXCaption.Height="25"
                 ui:WindowXCaption.Padding="0,0,0,0"
@@ -85,8 +86,7 @@
             <Slider x:Name="MemorySlider" 
                     ValueChanged="MemorySlider_OnValueChanged"
                     Minimum="1"
-                    
-                    Value="4" 
+                    Value='4'
                     TickFrequency="1"
                     IsSnapToTickEnabled="True"
                     Width="400"

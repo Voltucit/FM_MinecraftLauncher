@@ -84,15 +84,15 @@
             <TextBlock>游戏内存设置</TextBlock>
             <Slider x:Name="MemorySlider" 
                     ValueChanged="MemorySlider_OnValueChanged"
-                    Minimum="1024"
-                    Maximum="16000"
-                    Value="2048" 
-                    TickFrequency="512"
+                    Minimum="1"
+                    
+                    Value="4" 
+                    TickFrequency="1"
                     IsSnapToTickEnabled="True"
                     Width="400"
                     Margin="-100,10,0,0"/>
             <TextBlock
-                Text="{Binding ElementName=MemorySlider,Path=Value,Mode=OneWay,UpdateSourceTrigger=PropertyChanged,StringFormat={}{0}MB}"
+                Text="{Binding ElementName=MemorySlider,Path=Value,Mode=OneWay,UpdateSourceTrigger=PropertyChanged,StringFormat={}{0}GB}"
                 />
         </StackPanel>
         

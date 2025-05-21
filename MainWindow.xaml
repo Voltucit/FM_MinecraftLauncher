@@ -110,6 +110,31 @@
                 ui:ButtonHelper.HoverBorderBrush="#a1a3a6"
                 ui:ButtonHelper.ShadowColor="Black"
                 Margin="550,250,0,0"/>
+        <!-- 进度条区域 -->
+        <StackPanel x:Name="ProgressPanel" Margin="-380,380,0,0" Width="400">
+            <TextBlock x:Name="ProgressTextBlock" 
+                       Text="等待启动..." 
+                       FontSize="10"
+                       Foreground="Black"/>
+
+            <ProgressBar x:Name="ProgressBar" 
+                         Height="15" 
+                         Minimum="0" 
+                         Maximum="100" 
+                         IsIndeterminate="False"
+                         Margin="0,5,0,5"
+                         BorderBrush="#a1a3a6"
+                         Background="#e0e0e0"
+                         Foreground="#77787b"
+                         ui:ProgressBarHelper.CornerRadius="10,10,10,10"
+                         />
+
+            <TextBlock x:Name="ProgressPercent" 
+                       HorizontalAlignment="Right" 
+                       Text=""
+                       Foreground="Black"/>
+        </StackPanel>
+
         
     </Grid>
 </ui:WindowX>

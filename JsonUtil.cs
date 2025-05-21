@@ -7,7 +7,7 @@ public static class JsonUtil
 {
     private static readonly string FilePath = Path.Combine(
         AppDomain.CurrentDomain.BaseDirectory, 
-        ".minecraft", 
+        ".minecraft/", 
         "LauncherSetting.json"
     );
 

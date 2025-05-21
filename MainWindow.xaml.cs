@@ -3,18 +3,17 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using Panuon.WPF.UI;
+using System.Management;
+using System.Windows.Controls;
+using Panuon.WPF.UI.Configurations;
 using StarLight_Core.Authentication;
 using StarLight_Core.Enum;
 using StarLight_Core.Launch;
 using StarLight_Core.Models.Launch;
 using StarLight_Core.Utilities;
-using System.Management;
-using System.Windows.Controls;
-using Panuon.WPF.UI.Configurations;
 using StarLight_Core.Models.Authentication;
-using Newtonsoft.Json;
 
-namespace ÍüÈ´µÄĞıÂÉ_EP;
+namespace å¿˜å´çš„æ—‹å¾‹_EP;
 using System.Net;
 /// <summary>
 /// Interaction logic for MainWindow.xaml
@@ -66,7 +65,7 @@ public partial class MainWindow : WindowX
                 .FirstOrDefault(i => i.Id == config.GameVersion);
         }
 
-        // ÉèÖÃ Java Â·¾¶
+        // è®¾ç½® Java è·¯å¾„
         if (!string.IsNullOrEmpty(config.JavaPath))
         {
             JavaPath.SelectedItem = JavaPath.Items
@@ -87,7 +86,7 @@ public partial class MainWindow : WindowX
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"»ñÈ¡ÄÚ´æÊ§°Ü: {ex.Message}");
+            Console.WriteLine($"è·å–å†…å­˜å¤±è´¥: {ex.Message}");
         }
         return 0;
     }
@@ -105,7 +104,7 @@ public partial class MainWindow : WindowX
             var code =await  auth.RetrieveDeviceCodeInfo();
             Clipboard.Clear();
             Clipboard.SetText(code.UserCode);
-            MessageBoxX.Show("µÇÂ¼´úÂë:" + code.UserCode + "  ÒÑ¸´ÖÆµ½¼ôÇĞÀ¸");
+            MessageBoxX.Show("ç™»å½•ä»£ç :" + code.UserCode + "  å·²å¤åˆ¶åˆ°å‰ªåˆ‡æ ");
             try
             {
                 Process.Start(new ProcessStartInfo(code.VerificationUri)
@@ -116,7 +115,7 @@ public partial class MainWindow : WindowX
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"ÎŞ·¨´ò¿ªä¯ÀÀÆ÷: {ex.Message}");
+                MessageBox.Show($"æ— æ³•æ‰“å¼€æµè§ˆå™¨: {ex.Message}");
             }
             var token = await auth.GetTokenResponse(code);
             account = await auth.MicrosoftAuthAsync(token, x =>
@@ -128,56 +127,111 @@ public partial class MainWindow : WindowX
         {
               account = new OfflineAuthentication(PlayerName.Text).OfflineAuth();
         }
-        LaunchConfig args = new() // ÅäÖÃÆô¶¯²ÎÊı
+        LaunchConfig args = new() // é…ç½®å¯åŠ¨å‚æ•°
         {
             Account = new()
             {
-                BaseAccount = account // ÕË»§
+                BaseAccount = account // è´¦æˆ·
             },
             GameCoreConfig = new()
             {
-                Root = ".minecraft", // ÓÎÏ·¸ùÄ¿Â¼(¿ÉÒÔÊÇ¾ø¶ÔµÄÒ²¿ÉÒÔÊÇÏà¶ÔµÄ,×Ô¶¯ÅĞ¶Ï)
-                Version =GameVersion.Text, // Æô¶¯µÄ°æ±¾
-                IsVersionIsolation = true, //°æ±¾¸ôÀë
+                Root = ".minecraft/", // æ¸¸æˆæ ¹ç›®å½•(å¯ä»¥æ˜¯ç»å¯¹çš„ä¹Ÿå¯ä»¥æ˜¯ç›¸å¯¹çš„,è‡ªåŠ¨åˆ¤æ–­)
+                Version =GameVersion.Text, // å¯åŠ¨çš„ç‰ˆæœ¬
+                IsVersionIsolation = true, //ç‰ˆæœ¬éš”ç¦»
             
             },
             JavaConfig = new()
             {
-                JavaPath = JavaPath.Text, // Java Â·¾¶(¾ø¶ÔÂ·¾¶)
+                JavaPath = JavaPath.Text, // Java è·¯å¾„(ç»å¯¹è·¯å¾„)
                 MaxMemory = (int)(MemorySlider.Value*1024),
                 MinMemory = (int)(MemorySlider.Minimum*1024)
             }
         };
-        var launch = new MinecraftLauncher(args); // ÊµÀı»¯Æô¶¯Æ÷
-        var la = await launch.LaunchAsync(ReportProgress); // Æô¶¯
+        var launch = new MinecraftLauncher(args); // å®ä¾‹åŒ–å¯åŠ¨å™¨
+        var la = await launch.LaunchAsync(ReportProgress);
 
-// ÈÕÖ¾Êä³ö
-        la.ErrorReceived += (output) => Console.WriteLine($"{output}");
-        la.OutputReceived += (output) => Console.WriteLine($"{output}");
+        la.ErrorReceived += (output) => Console.WriteLine($"[é”™è¯¯] {output}");
+        la.OutputReceived += (output) => Console.WriteLine($"[è¾“å‡º] {output}");
+// æ·»åŠ  Exited äº‹ä»¶ç›‘å¬
+        la.Exited += (sender, args) =>
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (la.Status == Status.Succeeded)
+                {
+                    Panuon.WPF.UI.Toast.Show("æ¸¸æˆå·²å…³é—­");
+                    ProgressTextBlock.Text = "ç­‰å¾…å¯åŠ¨";
+                    ProgressBar.Value = 0;
+                    ProgressBar.IsIndeterminate = false;
+                    ProgressPercent.Text = "";
+                }
+                else
+                {
+                    MessageBoxX.Show("æ¸¸æˆå¼‚å¸¸é€€å‡º: " + la.Exception?.Message);
+                    ProgressTextBlock.Text = "æ¸¸æˆå¼‚å¸¸é€€å‡º";
+                    ProgressBar.IsIndeterminate = false;
+                    ProgressBar.Value = 0;
+                }
+            });
+        };
 
         if (la.Status == Status.Succeeded)
         {
-            Panuon.WPF.UI.Toast.Show("Æô¶¯³É¹¦");
-
-            // Æô¶¯³É¹¦Ö´ĞĞ²Ù×÷
+            Panuon.WPF.UI.Toast.Show("å¯åŠ¨æˆåŠŸ");
+            ProgressTextBlock.Text = "æ¸¸æˆè¿è¡Œä¸­";
+            ProgressBar.Value = 100;
+            ProgressBar.IsIndeterminate = false;
+            ProgressPercent.Text = "";
         }
         else
         {
-            MessageBoxX.Show("Æô¶¯Ê§°Ü"+la.Exception);
+            MessageBoxX.Show("å¯åŠ¨å¤±è´¥ï¼š" + la.Exception?.Message);
+            ProgressTextBlock.Text = "å¯åŠ¨å¤±è´¥";
+            ProgressBar.IsIndeterminate = false;
+            ProgressBar.Value = 0;
         }
+
     
     }
     private void ReportProgress(ProgressReport progress)
     {
+        Dispatcher.Invoke((Action)(() =>
+        {
+            // æ›´æ–°çŠ¶æ€æ–‡æœ¬
+            ProgressTextBlock.Text = progress.Description;
 
+            // å¦‚æœæœ‰ç™¾åˆ†æ¯”ä¿¡æ¯ï¼Œæ›´æ–°è¿›åº¦æ¡
+            if (progress.Percentage >= 0)
+            {
+                ProgressBar.IsIndeterminate = false;
+
+                // å°† 0-100 çš„ Percentage è½¬æ¢ä¸ºè¿›åº¦æ¡å€¼
+                ProgressBar.Value = progress.Percentage;
+
+                // æ˜¾ç¤ºç™¾åˆ†æ¯”æ–‡æœ¬
+                ProgressPercent.Text = $"{progress.Percentage}%";
+            }
+            else
+            {
+                // è‹¥ç™¾åˆ†æ¯”æ— æ•ˆï¼Œåˆ™ä½¿ç”¨ä¸ç¡®å®šæ¨¡å¼
+                ProgressBar.IsIndeterminate = true;
+                ProgressPercent.Text = "";
+            }
+
+            // å¯é€‰ï¼šè¾“å‡ºæ—¥å¿—åˆ°æ§åˆ¶å°
+            Console.WriteLine($"[è¿›åº¦] {progress.Description} - {progress.Percentage}%");
+        }));
     }
+
+
+
 
 
     private void MemorySlider_OnValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
         ulong totalMemoryBytes = GetTotalMemory();
         double totalMemoryMb = totalMemoryBytes / (1024.0 * 1024.0*1024);
-        int totalMemoryMbInt = (int)Math.Round(totalMemoryMb); // ½«½á¹ûËÄÉáÎåÈëÎªÕûÊı
+        int totalMemoryMbInt = (int)Math.Round(totalMemoryMb); // å°†ç»“æœå››èˆäº”å…¥ä¸ºæ•´æ•°
         MemorySlider.Maximum = totalMemoryMbInt;
     }
 

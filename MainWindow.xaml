@@ -44,8 +44,18 @@
                       ui:ComboBoxHelper.Watermark="待设置"
                       ui:ComboBoxHelper.HoverForeground="Black"
                       ui:ComboBoxHelper.HoverBackground="#66FFFFFF"
-                      ui:ComboBoxHelper.CornerRadius="5,5,5,5"
-            />
+                      ui:ComboBoxHelper.CornerRadius="5,5,5,5">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock>
+                            <Run Text="Java:" />
+                            <Run Text="{Binding JavaSlugVersion}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding JavaPath}" />
+                        </TextBlock>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
             
             <TextBlock>登录模式</TextBlock>
             <ComboBox 

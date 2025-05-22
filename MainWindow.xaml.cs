@@ -11,6 +11,7 @@ using StarLight_Core.Launch;
 using StarLight_Core.Models.Launch;
 using StarLight_Core.Utilities;
 using StarLight_Core.Models.Authentication;
+using StarLight_Core.Models.Utilities;
 
 namespace 忘却的旋律_EP;
 using System.Net;
@@ -20,6 +21,8 @@ using System.Net;
 public partial class MainWindow : WindowX
 {
     private DateTime _gameStarTime;
+
+    private string _JavaPath;
     public MainWindow()
     {
       InitializeComponent();
@@ -43,7 +46,6 @@ public partial class MainWindow : WindowX
     
     void GetJava()
     {
-        JavaPath.SelectedValuePath = "JavaPath";
         JavaPath.ItemsSource = JavaUtil.GetJavas();
     }
 
@@ -94,6 +96,7 @@ public partial class MainWindow : WindowX
     {
         BaseAccount account;
         
+        
         if (LoginMod.SelectedIndex==0)
         {
             var auth=new MicrosoftAuthentication("a9088867-a8c4-4d8d-a4a1-48a4eacb137b");
@@ -123,6 +126,17 @@ public partial class MainWindow : WindowX
         {
               account = new OfflineAuthentication(PlayerName.Text).OfflineAuth();
         }
+
+        if (JavaPath.SelectedItem is JavaInfo selectedItem)
+        {
+            _JavaPath = selectedItem.JavaPath;
+        }else
+        {
+            MessageBoxX.Show("请选择一个Java");
+            return;
+        }
+        
+        
         LaunchConfig args = new() // 配置启动参数
         {
             Account = new()
@@ -138,7 +152,7 @@ public partial class MainWindow : WindowX
             },
             JavaConfig = new()
             {
-                JavaPath = JavaPath.Text, // Java 路径(绝对路径)
+                JavaPath =_JavaPath , // Java 路径(绝对路径)
                 MaxMemory = (int)(MemorySlider.Value*1024),
                 MinMemory = (int)(MemorySlider.Minimum*1024)
             }
@@ -196,8 +210,9 @@ public partial class MainWindow : WindowX
         }
         else
         {
-            MessageBoxX.Show("启动失败：" + la.Exception?.Message);
-            ProgressTextBlock.Text = "启动失败";
+            MessageBoxX.Show("启动失败"+"\n错误信息:"+la.Exception?.Message);
+            Console.WriteLine(la.Exception);
+            ProgressTextBlock.Text = "等待启动";
             ProgressBar.IsIndeterminate = false;
             ProgressBar.Value = 0;
         }

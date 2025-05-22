@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using System.Windows;
 using Panuon.WPF.UI;
 using System.Management;
@@ -20,7 +19,7 @@ using System.Net;
 /// </summary>
 public partial class MainWindow : WindowX
 {
-   
+    private DateTime _gameStarTime;
     public MainWindow()
     {
       InitializeComponent();
@@ -32,7 +31,7 @@ public partial class MainWindow : WindowX
       var setting = Application.Current.FindResource("toastSetting") as ToastSetting;
 
     }
-
+    
     void GetGameVer()
     {
         GameVersion.DisplayMemberPath = "Id";
@@ -44,11 +43,8 @@ public partial class MainWindow : WindowX
     
     void GetJava()
     {
-        JavaPath.DisplayMemberPath = "JavaPath";
         JavaPath.SelectedValuePath = "JavaPath";
         JavaPath.ItemsSource = JavaUtil.GetJavas();
-        
-        
     }
 
 
@@ -135,7 +131,7 @@ public partial class MainWindow : WindowX
             },
             GameCoreConfig = new()
             {
-                Root = ".minecraft/", // 游戏根目录(可以是绝对的也可以是相对的,自动判断)
+                Root = ".minecraft", // 游戏根目录(可以是绝对的也可以是相对的,自动判断)
                 Version =GameVersion.Text, // 启动的版本
                 IsVersionIsolation = true, //版本隔离
             
@@ -147,7 +143,11 @@ public partial class MainWindow : WindowX
                 MinMemory = (int)(MemorySlider.Minimum*1024)
             }
         };
+        
+        _gameStarTime=DateTime.Now;
+        
         var launch = new MinecraftLauncher(args); // 实例化启动器
+        
         var la = await launch.LaunchAsync(ReportProgress);
 
         la.ErrorReceived += (output) => Console.WriteLine($"[错误] {output}");
@@ -157,10 +157,21 @@ public partial class MainWindow : WindowX
         {
             Dispatcher.Invoke(() =>
             {
+                var duration = DateTime.Now - _gameStarTime;
+                bool isCrash = duration.TotalMilliseconds < 1000; // 小于 1 秒判定为崩溃
+
                 if (la.Status == Status.Succeeded)
                 {
-                    Panuon.WPF.UI.Toast.Show("游戏已关闭");
-                    ProgressTextBlock.Text = "等待启动";
+                    if (isCrash)
+                    {
+                        MessageBoxX.Show("游戏异常关闭,请检查Java版本是否选择错误或是资源缺失"+"\n错误信息:"+la.Exception);
+                        ProgressTextBlock.Text = "等待启动";
+                    }
+                    else
+                    {
+                        Panuon.WPF.UI.Toast.Show("游戏已关闭");
+                        ProgressTextBlock.Text = "等待启动";
+                    }
                     ProgressBar.Value = 0;
                     ProgressBar.IsIndeterminate = false;
                     ProgressPercent.Text = "";

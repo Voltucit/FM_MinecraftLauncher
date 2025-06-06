@@ -1,5 +1,5 @@
 
-# FogettenMelodyMinecraft_Launcher Extreme Project
+# FM_MinecraftLauncher
 
 ![frame](https://img.shields.io/badge/.NET-8.0-blue)
 ![license](https://img.shields.io/badge/协议-MIT-orange)

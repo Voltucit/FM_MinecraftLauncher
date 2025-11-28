@@ -1,295 +1,91 @@
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Windows;
-using Panuon.WPF.UI;
-using System.Management;
 using System.Windows.Controls;
-using Panuon.WPF.UI.Configurations;
-using StarLight_Core.Authentication;
-using StarLight_Core.Enum;
-using StarLight_Core.Launch;
-using StarLight_Core.Models.Launch;
-using StarLight_Core.Utilities;
-using StarLight_Core.Models.Authentication;
-using StarLight_Core.Models.Utilities;
+using System.Windows.Media;
+using Panuon.WPF.UI;
+using 忘却的旋律_EP.Pages;
 
 namespace 忘却的旋律_EP;
 using System.Net;
+
 /// <summary>
 /// Interaction logic for MainWindow.xaml
 /// </summary>
 public partial class MainWindow : WindowX
 {
-    private DateTime _gameStarTime;
-
-    private string _JavaPath;
+    private Button _activeButton;
+    
     public MainWindow()
     {
-      InitializeComponent();
-      
-      
-      GetGameVer();
-      GetJava();
-      ConfigSet();
-      var setting = Application.Current.FindResource("toastSetting") as ToastSetting;
-
+        InitializeComponent();
+        // 初始化默认激活按钮
+        _activeButton = HomeButton;
+        SetActiveButtonStyle(HomeButton);
+        // 导航到主页
+        MainFrame.Navigate(new HomePage());
     }
     
-    void GetGameVer()
+    private void NavigateToHome(object sender, RoutedEventArgs e)
     {
-        GameVersion.DisplayMemberPath = "Id";
-        GameVersion.SelectedValuePath = "Id";
-        GameVersion.ItemsSource = GameCoreUtil.GetGameCores();
-        
-    }
-    
-    
-    void GetJava()
-    {
-        JavaPath.ItemsSource = JavaUtil.GetJavas();
-    }
-
-
-    void ConfigSet()
-    {
-        var config = JsonUtil.Load();
-        LoginMod.SelectedIndex = config.LoginMode;
-        PlayerName.Text  = config.Playername;
-        MemorySlider.Value = config.Memory;
-        if (!string.IsNullOrEmpty(config.GameVersion))
+        if (_activeButton != HomeButton)
         {
-            GameVersion.SelectedItem = GameVersion.Items
-                .Cast<dynamic>()
-                .FirstOrDefault(i => i.Id == config.GameVersion);
-        }
-
-        // 设置 Java 路径
-        if (!string.IsNullOrEmpty(config.JavaPath))
-        {
-            JavaPath.SelectedItem = JavaPath.Items
-                .Cast<dynamic>()
-                .FirstOrDefault(j => j.JavaPath == config.JavaPath);
+            PerformNavigation(new HomePage(), HomeButton);
         }
     }
 
-    private static ulong GetTotalMemory()
+    private void NavigateToGameSetting(object sender, RoutedEventArgs e)
     {
-        try
+        if (_activeButton != GameSettingButton)
         {
-            var searcher = new ManagementObjectSearcher("SELECT TotalPhysicalMemory FROM Win32_ComputerSystem");
-            foreach (ManagementObject obj in searcher.Get())
-            {
-                return Convert.ToUInt64(obj["TotalPhysicalMemory"]);
-            }
+            PerformNavigation(new GameSetting(), GameSettingButton);
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"获取内存失败: {ex.Message}");
-        }
-        return 0;
     }
     
-
-    
-    
-    private async void Button_Click(object sender, RoutedEventArgs e)
+    private void NavigateToAbout(object sender, RoutedEventArgs e)
     {
-        ProgressBar.Visibility = Visibility.Visible;
-        
-        BaseAccount account;
-        
-        
-        if (LoginMod.SelectedIndex==0)
+        if (_activeButton != AboutButton)
         {
-            var auth=new MicrosoftAuthentication("a9088867-a8c4-4d8d-a4a1-48a4eacb137b");
-            var code =await  auth.RetrieveDeviceCodeInfo();
-            Clipboard.Clear();
-            Clipboard.SetText(code.UserCode);
-            MessageBoxX.Show("登录代码:" + code.UserCode + "  已复制到剪切栏");
-            try
-            {
-                Process.Start(new ProcessStartInfo(code.VerificationUri)
-                {
-                    UseShellExecute = true,
-                    Verb = "open"
-                });
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"无法打开浏览器: {ex.Message}");
-            }
-            var token = await auth.GetTokenResponse(code);
-            account = await auth.MicrosoftAuthAsync(token, x =>
-            {
-                UserToken.Text = x;
-            });
+            PerformNavigation(new About(), AboutButton);
         }
-        else
+    }
+    
+    private void PerformNavigation(object page, Button targetButton)
+    {
+        // 执行淡出动画
+        var fadeOutStoryboard = (System.Windows.Media.Animation.Storyboard)FindResource("FadeOutStoryboard");
+        fadeOutStoryboard.Completed += (s, e) =>
         {
-              account = new OfflineAuthentication(PlayerName.Text).OfflineAuth();
-        }
-
-        if (JavaPath.SelectedItem is JavaInfo selectedItem)
-        {
-            _JavaPath = selectedItem.JavaPath;
-        }else
-        {
-            MessageBoxX.Show("请选择一个Java");
-            return;
-        }
-        
-        
-        LaunchConfig args = new() // 配置启动参数
-        {
-            Account = new()
-            {
-                BaseAccount = account // 账户
-            },
-            GameCoreConfig = new()
-            {
-                Root = ".minecraft", // 游戏根目录(可以是绝对的也可以是相对的,自动判断)
-                Version =GameVersion.Text, // 启动的版本
-                IsVersionIsolation = true, //版本隔离
-            
-            },
-            JavaConfig = new()
-            {
-                JavaPath =_JavaPath , // Java 路径(绝对路径)
-                MaxMemory = (int)(MemorySlider.Value*1024),
-                MinMemory = (int)(MemorySlider.Minimum*1024)
-            }
+            // 导航到新页面
+            MainFrame.Navigate(page);
+            // 更新激活按钮
+            SetActiveButtonStyle(targetButton);
+            // 执行淡入动画
+            var fadeInStoryboard = (System.Windows.Media.Animation.Storyboard)FindResource("FadeInStoryboard");
+            fadeInStoryboard.Begin(MainFrame);
         };
-        
-        _gameStarTime=DateTime.Now;
-        
-        var launch = new MinecraftLauncher(args); // 实例化启动器
-        
-        var la = await launch.LaunchAsync(ReportProgress);
-
-        la.ErrorReceived += (output) => Console.WriteLine($"[错误] {output}");
-        la.OutputReceived += (output) => Console.WriteLine($"[输出] {output}");
-// 添加 Exited 事件监听
-        la.Exited += (sender, args) =>
-        {
-            Dispatcher.Invoke(() =>
-            {
-                var duration = DateTime.Now - _gameStarTime;
-                bool isCrash = duration.TotalMilliseconds < 1000; // 小于 1 秒判定为崩溃
-
-                if (la.Status == Status.Succeeded)
-                {
-                    if (isCrash)
-                    {
-                        MessageBoxX.Show("游戏异常关闭,请检查Java版本是否选择错误或是资源缺失"+"\n错误信息:"+la.Exception);
-                        ProgressTextBlock.Text = "等待启动";
-                        ProgressBar.Visibility = Visibility.Collapsed;
-                    }
-                    else
-                    {
-                        Panuon.WPF.UI.Toast.Show("游戏已关闭");
-                        ProgressTextBlock.Text = "等待启动";
-                        ProgressBar.Visibility = Visibility.Collapsed;
-                    }
-                    ProgressBar.Value = 0;
-                    ProgressBar.IsIndeterminate = false;
-                    ProgressPercent.Text = "";
-                }
-                else
-                {
-                    MessageBoxX.Show("游戏异常退出: " + la.Exception?.Message);
-                    ProgressTextBlock.Text = "游戏异常退出";
-                    ProgressBar.IsIndeterminate = false;
-                    ProgressBar.Value = 0;
-                    ProgressBar.Visibility = Visibility.Collapsed;
-                }
-            });
-        };
-
-        if (la.Status == Status.Succeeded)
-        {
-            Panuon.WPF.UI.Toast.Show("启动成功");
-            ProgressTextBlock.Text = "游戏运行中";
-            ProgressBar.Value = 100;
-            ProgressBar.IsIndeterminate = false;
-            ProgressPercent.Text = "";
-        }
-        else
-        {
-            MessageBoxX.Show("启动失败"+"\n错误信息:"+la.Exception?.Message);
-            Console.WriteLine(la.Exception);
-            ProgressTextBlock.Text = "等待启动";
-            ProgressBar.IsIndeterminate = false;
-            ProgressBar.Value = 0;
-        }
-
+        fadeOutStoryboard.Begin(MainFrame);
+    }
     
-    }
-    private void ReportProgress(ProgressReport progress)
+    private void SetActiveButtonStyle(Button activeButton)
     {
-        Dispatcher.Invoke((Action)(() =>
+        // 重置之前激活的按钮
+        if (_activeButton != null)
         {
-            // 更新状态文本
-            ProgressTextBlock.Text = progress.Description;
-
-            // 如果有百分比信息，更新进度条
-            if (progress.Percentage >= 0)
-            {
-                ProgressBar.IsIndeterminate = false;
-
-                // 将 0-100 的 Percentage 转换为进度条值
-                ProgressBar.Value = progress.Percentage;
-
-                // 显示百分比文本
-                ProgressPercent.Text = $"{progress.Percentage}%";
-            }
-            else
-            {
-                // 若百分比无效，则使用不确定模式
-                ProgressBar.IsIndeterminate = true;
-                ProgressPercent.Text = "";
-            }
-
-            // 可选：输出日志到控制台
-            Console.WriteLine($"[进度] {progress.Description} - {progress.Percentage}%");
-        }));
-    }
-
-
-
-
-
-    private void MemorySlider_OnValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-    {
-        ulong totalMemoryBytes = GetTotalMemory();
-        double totalMemoryMb = totalMemoryBytes / (1024.0 * 1024.0*1024);
-        int totalMemoryMbInt = (int)Math.Round(totalMemoryMb); // 将结果四舍五入为整数
-        MemorySlider.Maximum = totalMemoryMbInt;
-    }
-
-    private void LoginMod_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (LoginMod.SelectedIndex==0)
-        {
-            PlayerName.Visibility = Visibility.Collapsed;
-            PlayerNames.Visibility = Visibility.Collapsed;
+            _activeButton.ClearValue(Button.BackgroundProperty);
+            _activeButton.ClearValue(Button.ForegroundProperty);
         }
-        else
+        
+        // 设置新的激活按钮样式
+        activeButton.Background = new SolidColorBrush(Color.FromRgb(0, 122, 204));
+        activeButton.Foreground = new SolidColorBrush(Colors.White);
+        _activeButton = activeButton;
+    }
+    private void Window_Closing(object sender, CancelEventArgs e)
+    {
+        if (MainFrame.Content is HomePage homePage)
         {
-            PlayerName.Visibility = Visibility.Visible;
-            PlayerNames.Visibility = Visibility.Visible;
+            homePage.SaveSettings();
         }
     }
 
-    private void MainWindow_OnClosing(object? sender, CancelEventArgs e)
-    {
-        var config = new LauncherSettings()
-        {
-            LoginMode = LoginMod.SelectedIndex,
-            Playername = PlayerName.Text,
-            GameVersion = (GameVersion.SelectedItem as dynamic)?.Id ?? "",
-            JavaPath = (JavaPath.SelectedItem as dynamic)?.JavaPath ?? "",
-            Memory =  MemorySlider.Value
-        };
-        JsonUtil.Save(config);
-    }
 }

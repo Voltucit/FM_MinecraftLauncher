@@ -21,10 +21,10 @@ public partial class HomePage : Page
     private DateTime _gameStarTime;
 
     private string _JavaPath;
+    
     public HomePage()
     {
         InitializeComponent();
-      
       
         GetGameVer();
         GetJava();
@@ -297,5 +297,9 @@ public partial class HomePage : Page
         };
         JsonUtil.Save(config);
     }
+    
+    
+    
+    
 
 }

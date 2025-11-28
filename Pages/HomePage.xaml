@@ -1,0 +1,125 @@
+﻿<!-- HomePage.xaml -->
+<Page x:Class="忘却的旋律_EP.Pages.HomePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:pu="https://opensource.panuon.com/wpf-ui"
+      mc:Ignorable="d"
+      Title="HomePage" Height="450" Width="800">
+    <Grid>
+        <StackPanel Height="220" Width="350" Margin="-430,-200,0,0">
+            <TextBlock>游戏版本 </TextBlock>
+            <ComboBox x:Name="GameVersion" DisplayMemberPath="Id" Width="200" Margin="-150,10,0,0"
+                      Height="25"
+                      pu:ComboBoxHelper.Watermark="待设置"
+                      pu:ComboBoxHelper.HoverForeground="Black"
+                      pu:ComboBoxHelper.HoverBackground="#66FFFFFF"
+                      pu:ComboBoxHelper.CornerRadius="5,5,5,5"
+            />
+            <TextBlock>Java路径 </TextBlock>
+            <ComboBox x:Name="JavaPath" Width="200" Margin="-150,10,0,0"
+                     Height="25"
+                      pu:ComboBoxHelper.Watermark="待设置"
+                      pu:ComboBoxHelper.HoverForeground="Black"
+                      pu:ComboBoxHelper.HoverBackground="#66FFFFFF"
+                      pu:ComboBoxHelper.CornerRadius="5,5,5,5">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock>
+                            <Run Text="Java" />
+                            <Run Text="{Binding JavaSlugVersion}" />
+                            <!-- <Run Text="-" /> -->
+                            <!-- <Run Text="{Binding JavaPath}" /> -->
+                        </TextBlock>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            
+            <TextBlock>登录模式</TextBlock>
+            <ComboBox 
+                x:Name="LoginMod"
+                Height="25"
+                Width="200" 
+                Margin="-150,10,0,0"
+                pu:ComboBoxHelper.CornerRadius="5,5,5,5"
+                pu:ComboBoxHelper.HoverBackground="#66FFFFFF"
+                pu:ComboBoxHelper.FocusedBorderBrush="#77787b"
+                pu:ComboBoxHelper.FocusedShadowColor="#a1a3a6"
+                SelectionChanged="LoginMod_OnSelectionChanged"
+            >
+                <ComboBoxItem Content="正版登录"></ComboBoxItem>
+                <ComboBoxItem Content="离线登录"></ComboBoxItem>
+            </ComboBox>
+            
+            <TextBlock x:Name="PlayerNames">用户名</TextBlock>
+            <TextBox x:Name="PlayerName"
+                     Height="25"
+                     Width="200" 
+                     Margin="-150,10,0,0"
+                     pu:TextBoxHelper.CornerRadius="5,5,5,5"
+                     pu:TextBoxHelper.HoverBackground="#66FFFFFF"
+                     pu:TextBoxHelper.FocusedBorderBrush="#77787b"
+                     pu:TextBoxHelper.FocusedShadowColor="#a1a3a6"/>
+            <TextBlock x:Name="UserToken"
+                       Height="25"
+                       Width="200"
+                       Margin="-150,10,0,0"
+                       />
+        </StackPanel>
+        
+        <StackPanel Margin="-280,250,0,0 " Height="100" Width="500">
+            <TextBlock>游戏内存设置</TextBlock>
+            <Slider x:Name="MemorySlider" 
+                    ValueChanged="MemorySlider_OnValueChanged"
+                    Minimum="1"
+                    TickFrequency="1"
+                    IsSnapToTickEnabled="True"
+                    Width="400"
+                    Margin="-100,10,0,0"/>
+            <TextBlock
+                Text="{Binding ElementName=MemorySlider,Path=Value,Mode=OneWay,UpdateSourceTrigger=PropertyChanged,StringFormat={}{0}GB}"
+                />
+        </StackPanel>
+        
+        <Button Height="60"
+                Width="190"
+                Click="Button_Click"
+                Content=" 启 动 游 戏 "
+                pu:ButtonHelper.CornerRadius="15,15,15,15"
+                pu:ButtonHelper.HoverCornerRadius="15,15,15,15"
+                pu:ButtonHelper.ClickEffect="Shake"
+                pu:ButtonHelper.ClickBorderBrush="#a1a3a6"
+                pu:ButtonHelper.ClickBackground="#66FFFFFF"
+                pu:ButtonHelper.HoverBackground="#66FFFFFF"
+                pu:ButtonHelper.HoverForeground="#66FFFFFF"
+                pu:ButtonHelper.HoverBorderBrush="#a1a3a6"
+                pu:ButtonHelper.ShadowColor="Black"
+                Margin="550,250,0,0"/>
+        
+        <!-- 进度条区域 -->
+        <StackPanel x:Name="ProgressPanel" Margin="-380,380,0,0" Width="400">
+            <TextBlock x:Name="ProgressTextBlock" 
+                       Text="等待启动..." 
+                       FontSize="10"
+                       Foreground="Black"/>
+            <ProgressBar x:Name="ProgressBar" 
+                         Height="15" 
+                         Minimum="0" 
+                         Maximum="100" 
+                         IsIndeterminate="False"
+                         Margin="0,5,0,5"
+                         BorderBrush="#a1a3a6"
+                         Background="#e0e0e0"
+                         Foreground="#77787b"
+                         pu:ProgressBarHelper.CornerRadius="10,10,10,10"
+                         Visibility="Collapsed"
+                         />
+            <TextBlock x:Name="ProgressPercent" 
+                       HorizontalAlignment="Right" 
+                       Text=""
+                       Foreground="Black"/>
+        </StackPanel>
+    </Grid>
+</Page>
+

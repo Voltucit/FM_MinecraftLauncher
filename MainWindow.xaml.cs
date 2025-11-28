@@ -94,6 +94,8 @@ public partial class MainWindow : WindowX
     
     private async void Button_Click(object sender, RoutedEventArgs e)
     {
+        ProgressBar.Visibility = Visibility.Visible;
+        
         BaseAccount account;
         
         
@@ -180,11 +182,13 @@ public partial class MainWindow : WindowX
                     {
                         MessageBoxX.Show("游戏异常关闭,请检查Java版本是否选择错误或是资源缺失"+"\n错误信息:"+la.Exception);
                         ProgressTextBlock.Text = "等待启动";
+                        ProgressBar.Visibility = Visibility.Collapsed;
                     }
                     else
                     {
                         Panuon.WPF.UI.Toast.Show("游戏已关闭");
                         ProgressTextBlock.Text = "等待启动";
+                        ProgressBar.Visibility = Visibility.Collapsed;
                     }
                     ProgressBar.Value = 0;
                     ProgressBar.IsIndeterminate = false;
@@ -196,6 +200,7 @@ public partial class MainWindow : WindowX
                     ProgressTextBlock.Text = "游戏异常退出";
                     ProgressBar.IsIndeterminate = false;
                     ProgressBar.Value = 0;
+                    ProgressBar.Visibility = Visibility.Collapsed;
                 }
             });
         };

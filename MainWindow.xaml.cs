@@ -15,6 +15,7 @@ public partial class MainWindow : WindowX
 {
     private Button _activeButton;
     
+    private System.Windows.Threading.DispatcherTimer _timer;
     public MainWindow()
     {
         InitializeComponent();
@@ -23,6 +24,9 @@ public partial class MainWindow : WindowX
         SetActiveButtonStyle(HomeButton);
         // 导航到主页
         MainFrame.Navigate(new HomePage());
+        
+        InitializeTimer();
+        
     }
     
     private void NavigateToHome(object sender, RoutedEventArgs e)
@@ -76,7 +80,7 @@ public partial class MainWindow : WindowX
         }
         
         // 设置新的激活按钮样式
-        activeButton.Background = new SolidColorBrush(Color.FromRgb(0, 122, 204));
+        activeButton.Background = new SolidColorBrush(Color.FromRgb(128, 128, 128));
         activeButton.Foreground = new SolidColorBrush(Colors.White);
         _activeButton = activeButton;
     }
@@ -87,5 +91,43 @@ public partial class MainWindow : WindowX
             homePage.SaveSettings();
         }
     }
+    private void InitializeTimer()
+    {
+        _timer = new System.Windows.Threading.DispatcherTimer();
+        _timer.Interval = TimeSpan.FromSeconds(1); // 每秒更新一次
+        _timer.Tick += Timer_Tick;
+        _timer.Start();
+    
+        // 立即显示当前时间
+        UpdateTimeDisplay();
+    }
+
+// 定时器事件处理
+    private void Timer_Tick(object sender, EventArgs e)
+    {
+        UpdateTimeDisplay();
+    }
+
+// 更新时间显示
+    private void UpdateTimeDisplay()
+    {
+        if (CurrentDateTextBlock != null && CurrentTimeTextBlock != null)
+        {
+            CurrentDateTextBlock.Text = DateTime.Now.ToString("yyyy-MM-dd");
+            CurrentTimeTextBlock.Text = DateTime.Now.ToString("HH:mm:ss");
+        }
+    }
+    
+    private void MinimizeWindow(object sender, RoutedEventArgs e)
+    {
+        this.WindowState = WindowState.Minimized;
+    }
+
+    private void CloseWindow(object sender, RoutedEventArgs e)
+    {
+        this.Close();
+    }
+
+
 
 }

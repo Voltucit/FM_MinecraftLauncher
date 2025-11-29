@@ -118,15 +118,7 @@ public partial class MainWindow : WindowX
         }
     }
     
-    private void MinimizeWindow(object sender, RoutedEventArgs e)
-    {
-        this.WindowState = WindowState.Minimized;
-    }
-
-    private void CloseWindow(object sender, RoutedEventArgs e)
-    {
-        this.Close();
-    }
+  
 
 
 

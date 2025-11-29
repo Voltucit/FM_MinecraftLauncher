@@ -14,9 +14,10 @@
             pu:WindowXCaption.Height="25"
             pu:WindowXCaption.BorderThickness="0,0,0,0"
             pu:WindowXCaption.HeaderAlignment="Left"
-            pu:WindowXCaption.Buttons="None"
+            pu:WindowXCaption.Buttons="MinimizeClose"
             
-            Height="500" Width="820" ResizeMode="NoResize"
+            
+            Height="500" Width="820" ResizeMode="CanMinimize"
             
             
             Closing="Window_Closing"
@@ -38,37 +39,6 @@
         </Storyboard>
     </pu:WindowX.Resources>
     <Grid>
-        <!-- 关闭按钮等 -->
-        <StackPanel Orientation="Horizontal" 
-                    HorizontalAlignment="Right" 
-                    VerticalAlignment="Top" 
-                    Margin="10,15,15,0" 
-                    Panel.ZIndex="100">
-            <Button x:Name="MinimizeButton" 
-                    Content="−" 
-                    Width="30" 
-                    Height="30" 
-                    Click="MinimizeWindow"
-                    Background="Transparent"
-                    Foreground="#FF000000"
-                    pu:ButtonHelper.CornerRadius="15,15,15,15"
-                    pu:ButtonHelper.HoverBackground="#808080"
-                    pu:ButtonHelper.HoverForeground="White"/>
-            <Button x:Name="CloseButton" 
-                    Content="×" 
-                    Width="30" 
-                    Height="30" 
-                    Margin="5,0,0,0"
-                    Click="CloseWindow"
-                    Background="Transparent"
-                    Foreground="#FF000000"
-                    pu:ButtonHelper.CornerRadius="15,15,15,15"
-                    pu:ButtonHelper.HoverBackground="#808080"
-                    pu:ButtonHelper.HoverForeground="White"/>
-        </StackPanel>
-
-
-        
         
         <!-- 顶部导航栏 -->
 <StackPanel Height="40" VerticalAlignment="Top" 

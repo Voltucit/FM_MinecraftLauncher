@@ -2,7 +2,7 @@
 using System.Data;
 using System.Windows;
 
-namespace 忘却的旋律_EP;
+namespace FMLauncher;
 
 /// <summary>
 /// Interaction logic for App.xaml

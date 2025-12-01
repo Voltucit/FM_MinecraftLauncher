@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 
 
-namespace 忘却的旋律_EP;
+namespace FMLauncher;
 
 public static class JsonUtil
 {
@@ -15,10 +15,11 @@ public static class JsonUtil
     public static LauncherSettings Load()
     {
         var directory = Path.GetDirectoryName(FilePath);
-        if (!Directory.Exists(directory))
+        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
         {
             Directory.CreateDirectory(directory);
         }
+
 
         if (!File.Exists(FilePath))
         {
@@ -32,7 +33,7 @@ public static class JsonUtil
     public static void Save(LauncherSettings settings)
     {
         var directory = Path.GetDirectoryName(FilePath);
-        if (!Directory.Exists(directory))
+        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
         {
             Directory.CreateDirectory(directory);
         }

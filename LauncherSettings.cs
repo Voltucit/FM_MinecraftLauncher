@@ -1,4 +1,4 @@
-﻿namespace 忘却的旋律_EP;
+﻿namespace FMLauncher;
 
 public class LauncherSettings
 {

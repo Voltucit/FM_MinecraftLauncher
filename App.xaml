@@ -1,7 +1,7 @@
-﻿<Application x:Class="忘却的旋律_EP.App"
+﻿<Application x:Class="FMLauncher.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:忘却的旋律_EP"
+             xmlns:local="clr-namespace:FMLauncher"
              xmlns:pu="https://opensource.panuon.com/wpf-ui"
              
 

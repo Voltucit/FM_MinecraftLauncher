@@ -2,10 +2,10 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using FMLauncher.Pages;
 using Panuon.WPF.UI;
-using 忘却的旋律_EP.Pages;
 
-namespace 忘却的旋律_EP;
+namespace FMLauncher;
 using System.Net;
 
 /// <summary>
@@ -15,7 +15,7 @@ public partial class MainWindow : WindowX
 {
     private Button _activeButton;
     
-    private System.Windows.Threading.DispatcherTimer _timer;
+    private System.Windows.Threading.DispatcherTimer? _timer;
     public MainWindow()
     {
         InitializeComponent();
@@ -103,7 +103,7 @@ public partial class MainWindow : WindowX
     }
 
 // 定时器事件处理
-    private void Timer_Tick(object sender, EventArgs e)
+    private void Timer_Tick(object? sender, EventArgs e)
     {
         UpdateTimeDisplay();
     }

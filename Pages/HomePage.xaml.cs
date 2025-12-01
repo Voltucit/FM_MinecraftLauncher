@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Windows;
 using Panuon.WPF.UI;
 using System.Management;
@@ -13,19 +12,20 @@ using StarLight_Core.Utilities;
 using StarLight_Core.Models.Authentication;
 using StarLight_Core.Models.Utilities;
 
-namespace 忘却的旋律_EP.Pages;
+namespace FMLauncher.Pages;
 
 public partial class HomePage : Page
 {
     
     private DateTime _gameStarTime;
 
-    private string _JavaPath;
+    private  string? _JavaPath;
     
     public HomePage()
     {
         InitializeComponent();
-      
+        _JavaPath = string.Empty;
+        
         GetGameVer();
         GetJava();
         ConfigSet();

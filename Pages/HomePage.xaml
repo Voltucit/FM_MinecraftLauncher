@@ -12,10 +12,10 @@
                 CornerRadius="10" 
                 Padding="20"
                 Width="400"
-                Height="280"
+                Height="250"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
-                Margin="20,10,0,0" >
+                Margin="20,5,0,0" >
         <StackPanel>
            
             <TextBlock>游戏版本 </TextBlock>
@@ -60,7 +60,6 @@
                 <ComboBoxItem Content="正版登录"></ComboBoxItem>
                 <ComboBoxItem Content="离线登录"></ComboBoxItem>
             </ComboBox>
-            
             <TextBlock x:Name="PlayerNames">用户名</TextBlock>
             <TextBox x:Name="PlayerName"
                      Height="25"
@@ -70,18 +69,7 @@
                      pu:TextBoxHelper.HoverBackground="#66FFFFFF"
                      pu:TextBoxHelper.FocusedBorderBrush="#77787b"
                      pu:TextBoxHelper.FocusedShadowColor="#a1a3a6"/>
-            <TextBlock x:Name="UserToken"
-                       Height="25"
-                       Width="200"
-                       Margin="-150,10,0,0"
-                       />
-            <TextBlock x:Name="OnlineUserName" 
-                       Visibility="Collapsed"
-                       Height="25"
-                       Width="200"
-                       Margin="0,10,0,0"/>
-
-            
+            <TextBlock x:Name="UserToken" Visibility="Visible"/>
         </StackPanel>
         </Border>
         
@@ -99,6 +87,60 @@
                 />
         </StackPanel>
         
+        <!-- 将用户信息和登出按钮移到启动游戏按钮上方 -->
+        <Border Background="#66FFFFFF" 
+                CornerRadius="10" 
+                Padding="15"
+                Width="200"
+                Height="120"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Margin="0,50,80,0"
+                x:Name="OnlineBorder">
+            <StackPanel>
+                <TextBlock x:Name="OnlineUserName" 
+                           Visibility="Collapsed"
+                           Height="25"
+                           Width="170"
+                           Margin="0,5,0,10"
+                           TextAlignment="Center"
+                           FontWeight="Bold"/>
+                <TextBlock x:Name="TextUnloginBlock" HorizontalAlignment="Center">当前状态：未登录</TextBlock>
+                <Button Click="Login_Click"
+                        x:Name="LoginButton"
+                        Height="30"
+                        Width="100"
+                        Margin="0,35,0,0"
+                        Content="登录"
+                        pu:ButtonHelper.CornerRadius="15,15,15,15"
+                        pu:ButtonHelper.HoverCornerRadius="15,15,15,15"
+                        pu:ButtonHelper.ClickBorderBrush="#a1a3a6"
+                        pu:ButtonHelper.ClickBackground="#66FFFFFF"
+                        pu:ButtonHelper.HoverBackground="#808080"
+                        pu:ButtonHelper.HoverForeground="White"
+                        pu:ButtonHelper.HoverBorderBrush="#a1a3a6"
+                        pu:ButtonHelper.ShadowColor="#44FFFFFF"/>
+                <Button Click="Logout"
+                        x:Name="LogoutButton"
+                        Height="30"
+                        Width="100"
+                        Margin="0,5,0,0"
+                        Visibility="Collapsed"
+                        pu:ButtonHelper.CornerRadius="15,15,15,15"
+                        pu:ButtonHelper.HoverCornerRadius="15,15,15,15"
+                        pu:ButtonHelper.ClickBorderBrush="#a1a3a6"
+                        pu:ButtonHelper.ClickBackground="#66FFFFFF"
+                        pu:ButtonHelper.HoverBackground="#808080"
+                        pu:ButtonHelper.HoverForeground="White"
+                        pu:ButtonHelper.HoverBorderBrush="#a1a3a6"
+                        pu:ButtonHelper.ShadowColor="#44FFFFFF">
+                    登出
+                </Button>
+            </StackPanel>
+        </Border>
+
+
+        <!-- 启动游戏按钮 -->
         <Button Height="60"
                 Width="190"
                 Click="Button_Click"
@@ -113,6 +155,7 @@
                 pu:ButtonHelper.HoverBorderBrush="#a1a3a6"
                 pu:ButtonHelper.ShadowColor="Black"
                 Margin="550,250,0,0"/>
+
         
         <!-- 进度条区域 -->
         <StackPanel x:Name="ProgressPanel" Margin="-380,380,0,0" Width="400">

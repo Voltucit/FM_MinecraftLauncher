@@ -98,14 +98,37 @@ public partial class HomePage : Page
                     try
                     {
                         await AutoLoginAsync(config);
+                        // 自动登录成功后隐藏登录按钮
+                        Dispatcher.Invoke(() => {
+                            LoginButton.Visibility = Visibility.Collapsed;
+                            TextUnloginBlock.Visibility = Visibility.Collapsed;
+                        });
                     }
                     catch (Exception ex)
                     {
                         Console.WriteLine($"自动登录异常: {ex.Message}");
+                        // 自动登录失败后显示登录按钮
+                        Dispatcher.Invoke(() => {
+                            LoginButton.Visibility = Visibility.Visible;
+                            TextUnloginBlock.Visibility = Visibility.Visible;
+                        });
                     }
                 }), System.Windows.Threading.DispatcherPriority.Background);
             }
+            else
+            {
+                // Token过期时显示登录按钮
+                LoginButton.Visibility = Visibility.Visible;
+                TextUnloginBlock.Visibility = Visibility.Visible;
+            }
         }
+        else if (config.LoginMode == 0)
+        {
+            // 没有有效token时显示登录按钮
+            LoginButton.Visibility = Visibility.Visible;
+            TextUnloginBlock.Visibility = Visibility.Visible;
+        }
+
 
     }
 
@@ -115,13 +138,46 @@ public partial class HomePage : Page
         {
             PlayerName.Visibility = Visibility.Collapsed;
             PlayerNames.Visibility = Visibility.Collapsed;
+            OnlineBorder.Visibility = Visibility.Visible;
+            UserToken.Visibility = Visibility.Visible;
+        
+            // 确保登录相关控件初始状态正确
+            var config = JsonUtil.Load();
+            if (!string.IsNullOrEmpty(config.AccessToken) && 
+                !string.IsNullOrEmpty(config.RefreshToken))
+            {
+                var tokenAge = DateTime.Now - config.TokenExpiry;
+                if (tokenAge.TotalSeconds < config.ExpiresIn)
+                {
+                    // 有有效token时隐藏登录按钮
+                    LoginButton.Visibility = Visibility.Collapsed;
+                    TextUnloginBlock.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    // token过期时显示登录按钮
+                    LoginButton.Visibility = Visibility.Visible;
+                    TextUnloginBlock.Visibility = Visibility.Visible;
+                }
+            }
+            else
+            {
+                // 没有token时显示登录按钮
+                LoginButton.Visibility = Visibility.Visible;
+                TextUnloginBlock.Visibility = Visibility.Visible;
+            }
         }
         else
         {
             PlayerName.Visibility = Visibility.Visible;
             PlayerNames.Visibility = Visibility.Visible;
+            OnlineBorder.Visibility = Visibility.Collapsed;
+            UserToken.Visibility = Visibility.Collapsed;
+            LoginButton.Visibility = Visibility.Collapsed;
+            TextUnloginBlock.Visibility = Visibility.Collapsed;
         }
     }
+
 
 
 
@@ -147,8 +203,6 @@ public partial class HomePage : Page
     
     private async void Button_Click(object sender, RoutedEventArgs e)
     {
-       ProgressBar.Visibility = Visibility.Visible;
-       ProgressTextBlock.Text = "正在登录...";
        MicrosoftAuthentication? auth = null;
         
        
@@ -159,7 +213,6 @@ public partial class HomePage : Page
         // 检查是否已有有效的访问令牌
         var config = JsonUtil.Load();
         bool shouldSkipLogin = false;
-        
         if (!string.IsNullOrEmpty(config.AccessToken) && 
             !string.IsNullOrEmpty(config.RefreshToken))
         {
@@ -178,6 +231,7 @@ public partial class HomePage : Page
                 // 显示用户名
                 OnlineUserName.Text = $"欢迎, {_account.Name}";
                 OnlineUserName.Visibility = Visibility.Visible;
+                LogoutButton.Visibility = Visibility.Visible;
                 shouldSkipLogin = true;
             }
         }
@@ -189,7 +243,7 @@ public partial class HomePage : Page
             Clipboard.Clear();
             Clipboard.SetText(code.UserCode);
             MessageBoxX.Show("登录代码:" + code.UserCode + "  已复制到剪切栏");
-            
+          
             try
             {
                 Process.Start(new ProcessStartInfo(code.VerificationUri)
@@ -219,6 +273,11 @@ public partial class HomePage : Page
             config.TokenExpiry = DateTime.Now.AddSeconds(token.ExpiresIn);
             JsonUtil.Save(config);
             
+            OnlineUserName.Text = $"欢迎, {_account.Name}";
+            OnlineUserName.Visibility = Visibility.Visible;
+            LogoutButton.Visibility = Visibility.Visible;
+            TextUnloginBlock.Visibility= Visibility.Collapsed;
+            LoginButton.Visibility = Visibility.Collapsed;
         }
     }
     else
@@ -255,11 +314,14 @@ public partial class HomePage : Page
                 MaxMemory = (int)(MemorySlider.Value*1024),
                 MinMemory = (int)(MemorySlider.Minimum*1024)
             }
+            
         };
         
         _gameStarTime=DateTime.Now;
         
+        
         var launch = new MinecraftLauncher(args); // 实例化启动器
+        ProgressBar.Visibility = Visibility.Visible;
         
         var la = await launch.LaunchAsync(ReportProgress);
 
@@ -283,7 +345,7 @@ public partial class HomePage : Page
                     }
                     else
                     {
-                        Panuon.WPF.UI.Toast.Show("游戏已关闭");
+                        Toast.Show("游戏已关闭");
                         ProgressTextBlock.Text = "等待启动";
                         ProgressBar.Visibility = Visibility.Collapsed;
                     }
@@ -365,17 +427,52 @@ public partial class HomePage : Page
 
     private void LoginMod_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (LoginMod.SelectedIndex==0)
+        // 保存当前选择的登录模式
+        var config = JsonUtil.Load();
+        config.LoginMode = LoginMod.SelectedIndex;
+        JsonUtil.Save(config);
+    
+        if (LoginMod.SelectedIndex == 0)
         {
             PlayerName.Visibility = Visibility.Collapsed;
             PlayerNames.Visibility = Visibility.Collapsed;
+            OnlineBorder.Visibility = Visibility.Visible;
+            UserToken.Visibility = Visibility.Visible;
+    
+            // 切换到正版登录时，根据是否有有效token决定是否显示登录按钮
+            if (!string.IsNullOrEmpty(config.AccessToken) && 
+                !string.IsNullOrEmpty(config.RefreshToken))
+            {
+                var tokenAge = DateTime.Now - config.TokenExpiry;
+                if (tokenAge.TotalSeconds < config.ExpiresIn)
+                {
+                    LoginButton.Visibility = Visibility.Collapsed;
+                    TextUnloginBlock.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    LoginButton.Visibility = Visibility.Visible;
+                    TextUnloginBlock.Visibility = Visibility.Visible;
+                }
+            }
+            else
+            {
+                LoginButton.Visibility = Visibility.Visible;
+                TextUnloginBlock.Visibility = Visibility.Visible;
+            }
         }
         else
         {
             PlayerName.Visibility = Visibility.Visible;
             PlayerNames.Visibility = Visibility.Visible;
+            OnlineBorder.Visibility = Visibility.Collapsed;
+            UserToken.Visibility = Visibility.Collapsed;
+            LoginButton.Visibility = Visibility.Collapsed;
+            TextUnloginBlock.Visibility = Visibility.Collapsed;
         }
     }
+
+
 
     public void SaveSettings()
     {
@@ -428,6 +525,7 @@ public partial class HomePage : Page
                             {
                                 OnlineUserName.Text = $"欢迎, {_account.Name}";
                                 OnlineUserName.Visibility = Visibility.Visible;
+                                LogoutButton.Visibility = Visibility.Visible;
                             }
                         });
                     }, config.RefreshToken);
@@ -435,15 +533,17 @@ public partial class HomePage : Page
             }
             OnlineUserName.Text = $"欢迎, {_account.Name}";
             OnlineUserName.Visibility = Visibility.Visible;
+            LogoutButton.Visibility = Visibility.Visible;
+         
         }
         catch (OperationCanceledException)
         {
             Console.WriteLine("自动登录超时");
-            MessageBoxX.Show("登录超时，请重新登录");
+            Toast.Show("登录超时，请重新登录");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"自动登录失败: {ex.Message}");
+           MessageBoxX.Show($"自动登录失败: {ex.Message}");
             // 清除无效的令牌信息
             var cleanConfig = JsonUtil.Load();
             cleanConfig.AccessToken = null;
@@ -452,14 +552,91 @@ public partial class HomePage : Page
         }
     }
 
+    private void Logout(object sender, RoutedEventArgs e)
+    {
+        var config = JsonUtil.Load();
+        config.AccessToken = null;
+        config.RefreshToken = null;
+        config.OnlineUserUUID = null;
+        config.OnlineUserName = null;
+        config.LoginMode = 1;
+        JsonUtil.Save(config);
 
-
-
-
+        Toast.Show("登出成功");
+        // 更新UI状态
+        OnlineUserName.Visibility = Visibility.Collapsed;
+        OnlineUserName.Text = "";
+        LogoutButton.Visibility = Visibility.Collapsed;
+        LoginButton.Visibility = Visibility.Visible;
+        TextUnloginBlock.Visibility = Visibility.Visible;
+        UserToken.Text = "";
+        UserToken.Visibility = Visibility.Collapsed;
+        _account = null;
+    
+        // 更新登录模式UI状态
+        UpdateLoginModeUI(1);
+    }
 
     
-    
-    
-    
+    private async void Login_Click(object sender, RoutedEventArgs e)
+{
+    // 触发微软登录流程
+    if (LoginMod.SelectedIndex == 0)
+    {
+        try
+        {
+            var auth = new MicrosoftAuthentication("a9088867-a8c4-4d8d-a4a1-48a4eacb137b");
+            
+            // 执行新的登录流程
+            var code = await auth.RetrieveDeviceCodeInfo();
+            Clipboard.Clear();
+            Clipboard.SetText(code.UserCode);
+            MessageBoxX.Show("登录代码:" + code.UserCode + "  已复制到剪切栏");
+          
+            try
+            {
+                Process.Start(new ProcessStartInfo(code.VerificationUri)
+                {
+                    UseShellExecute = true,
+                    Verb = "open"
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"无法打开浏览器: {ex.Message}");
+            }
+            
+            var token = await auth.GetTokenResponse(code);
+            _account = await auth.MicrosoftAuthAsync(token, x =>
+            {
+                UserToken.Text = x;
+            });
+
+            // 保存令牌信息
+            var config = JsonUtil.Load(); // 重新加载配置
+            config.AccessToken = token.AccessToken;
+            config.RefreshToken = token.RefreshToken;
+            config.ExpiresIn = token.ExpiresIn;
+            config.OnlineUserName = _account.Name;
+            config.OnlineUserUUID = _account.Uuid;
+            config.TokenExpiry = DateTime.Now.AddSeconds(token.ExpiresIn);
+            JsonUtil.Save(config);
+            
+            OnlineUserName.Text = $"欢迎, {_account.Name}";
+            OnlineUserName.Visibility = Visibility.Visible;
+            LogoutButton.Visibility = Visibility.Visible;
+
+            Toast.Show("登录成功");
+            LoginButton.Visibility= Visibility.Collapsed;
+            TextUnloginBlock.Visibility = Visibility.Collapsed;
+        }
+        catch (Exception ex)
+        {
+            MessageBoxX.Show($"登录失败: {ex.Message}");
+            LoginButton.Visibility = Visibility.Visible;
+            TextUnloginBlock.Visibility = Visibility.Visible;
+        }
+    }
+}
 
 }

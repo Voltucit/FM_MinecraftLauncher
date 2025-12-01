@@ -20,6 +20,7 @@ public partial class HomePage : Page
     private DateTime _gameStarTime;
 
     private  string? _JavaPath;
+    private BaseAccount? _account;
     
     public HomePage()
     {
@@ -29,7 +30,12 @@ public partial class HomePage : Page
         GetGameVer();
         GetJava();
         ConfigSet();
-        var setting = Application.Current.FindResource("toastSetting") as ToastSetting;
+
+        Dispatcher.BeginInvoke(new Action(() =>
+        {
+            var setting = Application.Current.FindResource("toastSetting") as ToastSetting;
+        }), System.Windows.Threading.DispatcherPriority.Background);
+
     }
      void GetGameVer()
     {
@@ -59,8 +65,12 @@ public partial class HomePage : Page
     {
         var config = JsonUtil.Load();
         LoginMod.SelectedIndex = config.LoginMode;
-        PlayerName.Text  = config.Playername;
+        PlayerName.Text = config.Playername;
         MemorySlider.Value = config.Memory;
+
+        // 设置登录模式相关的UI状态
+        UpdateLoginModeUI(config.LoginMode);
+
         if (!string.IsNullOrEmpty(config.GameVersion))
         {
             GameVersion.SelectedItem = GameVersion.Items
@@ -75,7 +85,45 @@ public partial class HomePage : Page
                 .Cast<dynamic>()
                 .FirstOrDefault(j => j.JavaPath == config.JavaPath);
         }
+        
+        if (config.LoginMode == 0 && 
+            !string.IsNullOrEmpty(config.RefreshToken) && 
+            !string.IsNullOrEmpty(config.AccessToken))
+        {
+            var tokenAge = DateTime.Now - config.TokenExpiry;
+            if (tokenAge.TotalSeconds < config.ExpiresIn)
+            {
+                // 使用Dispatcher在后台线程执行自动登录
+                Dispatcher.BeginInvoke(new Action(async () => {
+                    try
+                    {
+                        await AutoLoginAsync(config);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"自动登录异常: {ex.Message}");
+                    }
+                }), System.Windows.Threading.DispatcherPriority.Background);
+            }
+        }
+
     }
+
+    private void UpdateLoginModeUI(int loginMode)
+    {
+        if (loginMode == 0)
+        {
+            PlayerName.Visibility = Visibility.Collapsed;
+            PlayerNames.Visibility = Visibility.Collapsed;
+        }
+        else
+        {
+            PlayerName.Visibility = Visibility.Visible;
+            PlayerNames.Visibility = Visibility.Visible;
+        }
+    }
+
+
 
     private static ulong GetTotalMemory()
     {
@@ -99,18 +147,49 @@ public partial class HomePage : Page
     
     private async void Button_Click(object sender, RoutedEventArgs e)
     {
-        ProgressBar.Visibility = Visibility.Visible;
+       ProgressBar.Visibility = Visibility.Visible;
+       ProgressTextBlock.Text = "正在登录...";
+       MicrosoftAuthentication? auth = null;
         
-        BaseAccount account;
+       
+    if (LoginMod.SelectedIndex == 0)
+    {
+        auth = new MicrosoftAuthentication("a9088867-a8c4-4d8d-a4a1-48a4eacb137b");
         
+        // 检查是否已有有效的访问令牌
+        var config = JsonUtil.Load();
+        bool shouldSkipLogin = false;
         
-        if (LoginMod.SelectedIndex==0)
+        if (!string.IsNullOrEmpty(config.AccessToken) && 
+            !string.IsNullOrEmpty(config.RefreshToken))
         {
-            var auth=new MicrosoftAuthentication("a9088867-a8c4-4d8d-a4a1-48a4eacb137b");
-            var code =await  auth.RetrieveDeviceCodeInfo();
+            var tokenAge = DateTime.Now - config.TokenExpiry;
+            if (tokenAge.TotalSeconds < config.ExpiresIn)
+            {
+                // 令牌仍然有效，跳过登录流程
+                Console.WriteLine("已使用缓存信息");
+                _account = new MicrosoftAccount // 需要根据实际API调整
+                {
+                    Name = config.OnlineUserName,
+                    Uuid = config.OnlineUserUUID,
+                    AccessToken = config.AccessToken
+                };
+                
+                // 显示用户名
+                OnlineUserName.Text = $"欢迎, {_account.Name}";
+                OnlineUserName.Visibility = Visibility.Visible;
+                shouldSkipLogin = true;
+            }
+        }
+        
+        if (!shouldSkipLogin)
+        {
+            // 执行新的登录流程
+            var code = await auth.RetrieveDeviceCodeInfo();
             Clipboard.Clear();
             Clipboard.SetText(code.UserCode);
             MessageBoxX.Show("登录代码:" + code.UserCode + "  已复制到剪切栏");
+            
             try
             {
                 Process.Start(new ProcessStartInfo(code.VerificationUri)
@@ -123,16 +202,29 @@ public partial class HomePage : Page
             {
                 MessageBox.Show($"无法打开浏览器: {ex.Message}");
             }
+            
             var token = await auth.GetTokenResponse(code);
-            account = await auth.MicrosoftAuthAsync(token, x =>
+            _account = await auth.MicrosoftAuthAsync(token, x =>
             {
                 UserToken.Text = x;
             });
+
+            // 保存令牌信息
+            config = JsonUtil.Load(); // 重新加载配置
+            config.AccessToken = token.AccessToken;
+            config.RefreshToken = token.RefreshToken;
+            config.ExpiresIn = token.ExpiresIn;
+            config.OnlineUserName = _account.Name;
+            config.OnlineUserUUID = _account.Uuid;
+            config.TokenExpiry = DateTime.Now.AddSeconds(token.ExpiresIn);
+            JsonUtil.Save(config);
+            
         }
-        else
-        {
-              account = new OfflineAuthentication(PlayerName.Text).OfflineAuth();
-        }
+    }
+    else
+    {
+        _account = new OfflineAuthentication(PlayerName.Text).OfflineAuth();
+    }
 
         if (JavaPath.SelectedItem is JavaInfo selectedItem)
         {
@@ -148,7 +240,7 @@ public partial class HomePage : Page
         {
             Account = new()
             {
-                BaseAccount = account // 账户
+                BaseAccount = _account // 账户
             },
             GameCoreConfig = new()
             {
@@ -287,16 +379,84 @@ public partial class HomePage : Page
 
     public void SaveSettings()
     {
-        var config = new LauncherSettings()
+        var config = JsonUtil.Load();
+    
+        config.LoginMode = LoginMod.SelectedIndex;
+        config.Playername = PlayerName.Text;
+    
+        // 增加空值检查
+        if (GameVersion.SelectedItem != null)
         {
-            LoginMode = LoginMod.SelectedIndex,
-            Playername = PlayerName.Text,
-            GameVersion = (GameVersion.SelectedItem as dynamic)?.Id ?? "",
-            JavaPath = (JavaPath.SelectedItem as dynamic)?.JavaPath ?? "",
-            Memory = MemorySlider.Value
-        };
+            config.GameVersion = (GameVersion.SelectedItem as dynamic)?.Id ?? "";
+        }
+    
+        if (JavaPath.SelectedItem != null)
+        {
+            config.JavaPath = (JavaPath.SelectedItem as dynamic)?.JavaPath ?? "";
+        }
+    
+        config.Memory = MemorySlider.Value;
+    
         JsonUtil.Save(config);
     }
+
+    
+    private async Task AutoLoginAsync(LauncherSettings config)
+    {
+        try
+        {
+            // 添加超时机制
+            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
+            {
+                var auth = new MicrosoftAuthentication("a9088867-a8c4-4d8d-a4a1-48a4eacb137b");
+
+                if (!string.IsNullOrEmpty(config.RefreshToken))
+                {
+                    var tokenInfo = new GetTokenResponse
+                    {
+                        AccessToken = config.AccessToken,
+                        RefreshToken = config.RefreshToken,
+                        ExpiresIn = config.ExpiresIn
+                    };
+
+                    // 使用带取消令牌的认证方法（如果API支持）
+                    _account = await auth.MicrosoftAuthAsync(tokenInfo, x =>
+                    {
+                        Dispatcher.Invoke(() => {
+                            UserToken.Text = x;
+                            if (_account != null)
+                            {
+                                OnlineUserName.Text = $"欢迎, {_account.Name}";
+                                OnlineUserName.Visibility = Visibility.Visible;
+                            }
+                        });
+                    }, config.RefreshToken);
+                }
+            }
+            OnlineUserName.Text = $"欢迎, {_account.Name}";
+            OnlineUserName.Visibility = Visibility.Visible;
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("自动登录超时");
+            MessageBoxX.Show("登录超时，请重新登录");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"自动登录失败: {ex.Message}");
+            // 清除无效的令牌信息
+            var cleanConfig = JsonUtil.Load();
+            cleanConfig.AccessToken = null;
+            cleanConfig.RefreshToken = null;
+            JsonUtil.Save(cleanConfig);
+        }
+    }
+
+
+
+
+
+
     
     
     

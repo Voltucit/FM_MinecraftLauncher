@@ -53,6 +53,14 @@ public partial class MainWindow : WindowX
         }
     }
     
+    private void GameDownLoadButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        if (_activeButton!=GameDownLoadButton)
+        {
+            PerformNavigation(new GameDownload(),GameDownLoadButton);
+        }
+    }
+    
     private void PerformNavigation(object page, Button targetButton)
     {
         // 执行淡出动画
@@ -117,9 +125,7 @@ public partial class MainWindow : WindowX
             CurrentTimeTextBlock.Text = DateTime.Now.ToString("HH:mm:ss");
         }
     }
+
+
     
-  
-
-
-
 }

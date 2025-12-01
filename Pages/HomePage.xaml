@@ -8,7 +8,16 @@
       mc:Ignorable="d"
       Title="HomePage" Height="450" Width="800">
     <Grid>
-        <StackPanel Height="220" Width="350" Margin="-430,-200,0,0">
+        <Border Background="#66FFFFFF" 
+                CornerRadius="10" 
+                Padding="20"
+                Width="400"
+                Height="280"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Margin="20,10,0,0" >
+        <StackPanel>
+           
             <TextBlock>游戏版本 </TextBlock>
             <ComboBox x:Name="GameVersion" DisplayMemberPath="Id" Width="200" Margin="-150,10,0,0"
                       Height="25"
@@ -66,7 +75,15 @@
                        Width="200"
                        Margin="-150,10,0,0"
                        />
+            <TextBlock x:Name="OnlineUserName" 
+                       Visibility="Collapsed"
+                       Height="25"
+                       Width="200"
+                       Margin="0,10,0,0"/>
+
+            
         </StackPanel>
+        </Border>
         
         <StackPanel Margin="-280,250,0,0 " Height="100" Width="500">
             <TextBlock>游戏内存设置</TextBlock>

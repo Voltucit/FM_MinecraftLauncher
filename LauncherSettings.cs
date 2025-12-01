@@ -8,4 +8,12 @@ public class LauncherSettings
     public string JavaPath { get; set; } = "";
     
     public double Memory { get; set; } = 4;
+  
+    public  string OnlineUserName { get; set; }
+    public  string OnlineUserUUID { get; set; }
+    
+    public  string AccessToken { get; set; }
+    public   string RefreshToken { get; set; }
+    public DateTime TokenExpiry { get; set; }
+    public int ExpiresIn { get; set; }
 }
